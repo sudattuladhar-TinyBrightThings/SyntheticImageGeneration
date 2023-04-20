@@ -10,7 +10,7 @@ from scipy.spatial import distance
 
 class SyntheticImageGenerator():
     def __init__(self):
-        #np.random.seed(0)
+        np.random.seed(0)
         self._set_initial_parameters()
         self._generate_particle_centroids()
         self._generate_hotspot_points()
@@ -21,7 +21,7 @@ class SyntheticImageGenerator():
         self.width = 2048
         self.height = 1536
         # Camera Parameters
-        self.num_channels = 15                                     # No. of Channels
+        self.C = 15                                     # No. of Channels
         # Particle Parameters
         self.N = 10                                               # No. of Particles
         self.A = 50                                                # Mean Radius of the particles
@@ -52,6 +52,7 @@ class SyntheticImageGenerator():
         Y = self.R*np.sin(theta)
         self.hotspots = []
         for centroid in self.centroids:
+            print('Centroid', centroid)
             hotspot = np.concatenate((centroid[0] + X , centroid[1] + Y ), axis = 0).T
             self.hotspots.append(hotspot)
 
