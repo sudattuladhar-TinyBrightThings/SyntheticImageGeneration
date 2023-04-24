@@ -1,7 +1,7 @@
 import cv2 as cv
 import os.path
 from Main_GUI import Ui_MainWindow
-from SyntheticImageGeneration2 import SyntheticImageGenerator
+from SyntheticImageGeneration import SyntheticImageGenerator
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication
 )
@@ -13,7 +13,8 @@ class Controller(Ui_MainWindow, QMainWindow):
         super().__init__()
         self.setupUi(self)
         
-        self.synGenObj = SyntheticImageGenerator()
+        self.num_channels = 15
+        self.synGenObj = SyntheticImageGenerator(self.num_channels)
 
         # Main Window
         self._windowMain = Ui_MainWindow()
@@ -35,7 +36,7 @@ class Controller(Ui_MainWindow, QMainWindow):
         img = self.synGenObj.get_image(self.channel)
         self.showImage(img, self.img2)
         self.channel = self.channel + 1
-        if self.channel >= 15:
+        if self.channel >= self.num_channels:
             self.channel = 0
 
     def showImage(self, img, imglabel):
