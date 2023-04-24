@@ -1,7 +1,7 @@
 import cv2 as cv
 import os.path
 from Main_GUI import Ui_MainWindow
-from synthetic_image_generation import Synthetic_Image_Generator
+from SyntheticImageGeneration import SyntheticImageGenerator
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication
 )
@@ -14,39 +14,16 @@ class Controller(Ui_MainWindow, QMainWindow):
         self.setupUi(self)
         
         self.num_channels = 15
-
-        params_scene = {
-            # Particles
-            'num_particles': 10,
-            'min_proximity': 200,
-
-            # Boundary Parameters
-            'width_scene': 2048,
-            'height_scene':1536,
-        }
-
-        params_particle_sphere = {
-            # Core-Parameters
-            'radius_mean': 10,
-            'radius_std': 5,
-            'radial_separation_mean': 80,
-            'radial_separation_std': 10,
-
-            # Hot-Spot-Parameters
-            'num_channels': self.num_channels,
-            'angular_variation_std': 0, # np.pi/180 * 2,         # 2 degree noise std
-        }
-
-        self.synGenObj = Synthetic_Image_Generator(params_scene, params_particle_sphere)
+        self.synGenObj = SyntheticImageGenerator(self.num_channels)
 
         # Main Window
         self._windowMain = Ui_MainWindow()
 
-        img = self.synGenObj.get_image_composite()
+        img = self.synGenObj.get_composite_image()
         self.showImage(img, self.img)
-        img = self.synGenObj.get_image_channel(channel = 0)
+        img = self.synGenObj.get_image(channel = 0)
         self.showImage(img, self.img0)
-        img = self.synGenObj.get_image_channel(channel = 1)
+        img = self.synGenObj.get_image(channel = 1)
         self.showImage(img, self.img1)
 
         self.channel = 0
@@ -56,7 +33,7 @@ class Controller(Ui_MainWindow, QMainWindow):
         self.show()
 
     def animate(self):
-        img = self.synGenObj.get_image_channel(self.channel)
+        img = self.synGenObj.get_image(self.channel)
         self.showImage(img, self.img2)
         self.channel = self.channel + 1
         if self.channel >= self.num_channels:
