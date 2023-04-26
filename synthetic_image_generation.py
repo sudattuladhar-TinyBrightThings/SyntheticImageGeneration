@@ -7,6 +7,8 @@ import cv2 as cv
 from particle_sphere import Particle_SPHERE
 
 class Synthetic_Image_Generator():
+    HOTSPOT_SIZE = 10
+
     def __init__(self, params_scene, params_particle) -> None:
         self.params_scene = params_scene
         self.params_particle = params_particle
@@ -21,7 +23,7 @@ class Synthetic_Image_Generator():
         self._generate_images()
 
     def _generate_random_position(self):
-        min_gap = self.params_particle['radial_separation_mean'] + self.radius_mean
+        min_gap = self.radius_mean
         px = np.random.uniform(low = min_gap, high = self.width_scene - min_gap)
         py = np.random.uniform(low = min_gap, high = self.height_scene - min_gap)
         return (px, py)
@@ -74,12 +76,20 @@ class Synthetic_Image_Generator():
             p_posX = round(particle.position[0])
             p_posY = round(particle.position[1])
             self.img_composite = cv.drawMarker(self.img_composite, (p_posX, p_posY), (0, 0, 255), cv.MARKER_CROSS, 20, 3)
+            self.img_composite = cv.circle(self.img_composite, (p_posX, p_posX), 50, (0, 0, 0), 2)
             for centroid in particle.centroids:
-                self.img_composite = cv.circle(self.img_composite, (round(centroid[0]), round(centroid[1])), round(particle.r), (0, 0, 0), -1)
+                self.img_composite = cv.circle(self.img_composite, (round(centroid[0]), round(centroid[1])), self.HOTSPOT_SIZE, (0, 0, 0), -1)
 
+    def _generate_image_channels(self):
+        for channel in range(self.num_channels):
+            for particle in self.particles:
+                cx = particle.centroids[channel][0]
+                cy = particle.centroids[channel][1]
+                self.img_channels[channel] = cv.circle(self.img_channels[channel], (int(cx), int(cy)), self.HOTSPOT_SIZE, (255, 255, 255), -1)
 
     def _generate_images(self):
         self._generate_image_composite()
+        self._generate_image_channels()
 
     def get_image_composite(self):
         return self.img_composite

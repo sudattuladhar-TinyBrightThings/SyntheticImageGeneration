@@ -27,15 +27,14 @@ class Controller(Ui_MainWindow, QMainWindow):
 
         params_particle_sphere = {
             # Core-Parameters
-            'radius_mean': 10,
-            'radius_std': 5,
-            'radial_separation_mean': 80,
-            'radial_separation_std': 10,
+            'radius_mean': 75,
+            'radius_std': 10,                  # factor * radius_mean
 
             # Hot-Spot-Parameters
             'num_channels': self.num_channels,
             'angular_variation_std': 0, # np.pi/180 * 2,         # 2 degree noise std
         }
+        params_particle_sphere['radius_hotspot_noise_std'] = 0.03 * params_particle_sphere['radius_mean']
 
         self.synGenObj = Synthetic_Image_Generator(params_scene, params_particle_sphere)
 
