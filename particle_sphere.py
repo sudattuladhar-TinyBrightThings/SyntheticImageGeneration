@@ -9,7 +9,7 @@ class Particle_SPHERE(Particle):
         self.num_channels = params['num_channels']
         self.radius = np.random.normal(loc = params['radius_mean'], scale = params['radius_std'])
         self.angular_variation_std = params['angular_variation_std']
-        self.radius_hotspot_noise_std = params['radius_hotspot_noise_std']
+        self.radius_hotspot_noise_std = params['radius_hotspot_noise_std_factor'] * params['radius_mean']
         super().__init__(position)
         #self.r = np.random.normal(loc = params['radius_mean'], scale = params['radius_std']) # radius of a hotspot
         
