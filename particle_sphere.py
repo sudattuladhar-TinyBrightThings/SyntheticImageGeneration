@@ -7,8 +7,7 @@ class Particle_SPHERE(Particle):
         #self.params = params
         self.type = 'SPHERE'
         self.num_channels = params['num_channels']
-        self.radius_mean = params['radius_mean']        # of Particle
-        self.radius_std = params['radius_std']          # of Particle
+        self.radius = np.random.normal(loc = params['radius_mean'], scale = params['radius_std'])
         self.angular_variation_std = params['angular_variation_std']
         self.radius_hotspot_noise_std = params['radius_hotspot_noise_std']
         super().__init__(position)
@@ -16,7 +15,7 @@ class Particle_SPHERE(Particle):
         
     def _generate_centroids(self):
         noise_R = np.random.normal(loc = 0, scale = self.radius_hotspot_noise_std, size = self.num_channels)
-        self.R = np.random.normal(loc = self.radius_mean, scale = self.radius_std) + noise_R
+        self.R = self.radius + noise_R
 
         noise_angle = np.random.normal(loc = 0, scale = self.angular_variation_std, size = self.num_channels)
         theta = np.linspace(0, 2*np.pi, self.num_channels, endpoint=False) + noise_angle

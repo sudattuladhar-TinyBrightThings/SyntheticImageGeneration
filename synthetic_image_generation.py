@@ -75,8 +75,8 @@ class Synthetic_Image_Generator():
         for particle in self.particles:
             p_posX = round(particle.position[0])
             p_posY = round(particle.position[1])
+            self.img_composite = cv.circle(self.img_composite, (p_posX, p_posY), round(particle.radius), (0, 0, 0), 1)
             self.img_composite = cv.drawMarker(self.img_composite, (p_posX, p_posY), (0, 0, 255), cv.MARKER_CROSS, 20, 3)
-            self.img_composite = cv.circle(self.img_composite, (p_posX, p_posX), 50, (0, 0, 0), 2)
             for centroid in particle.centroids:
                 self.img_composite = cv.circle(self.img_composite, (round(centroid[0]), round(centroid[1])), self.HOTSPOT_SIZE, (0, 0, 0), -1)
 
@@ -85,7 +85,7 @@ class Synthetic_Image_Generator():
             for particle in self.particles:
                 cx = particle.centroids[channel][0]
                 cy = particle.centroids[channel][1]
-                self.img_channels[channel] = cv.circle(self.img_channels[channel], (int(cx), int(cy)), self.HOTSPOT_SIZE, (255, 255, 255), -1)
+                self.img_channels[channel] = cv.circle(self.img_channels[channel], (round(cx), round(cy)), self.HOTSPOT_SIZE, (255, 255, 255), -1)
 
     def _generate_images(self):
         self._generate_image_composite()
