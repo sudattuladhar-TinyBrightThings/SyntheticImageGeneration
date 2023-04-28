@@ -1,4 +1,8 @@
 *.pyc
-/.DS_Store/
-/__pycache__/*.pyc
-/Results
+**/.DS_Store
+ __pycache__/
+Expected_Results/
+Results/
+scratch.py
+scratch_backup.py
+Backup/
