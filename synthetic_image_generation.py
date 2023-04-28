@@ -12,7 +12,7 @@ class Synthetic_Image_Generator():
         self.num_channels = params_particle['num_channels']
         self.radius_mean = params_particle['radius_mean']
         self.hotspot_size = params_particle['hotspot_size']
-        self.hotspot_spread = params_particle['hotspot_spread']
+        #self.hotspot_spread = params_particle['hotspot_spread']
 
         # Scene Parameters
         self.num_particles = params_scene['num_particles']
@@ -25,11 +25,7 @@ class Synthetic_Image_Generator():
         self.params_particle = params_particle
 
         # hotspot-sphere structure
-        self.hs_sphere_structure = HotSpot_Structure_SPHERE(
-            size = params_particle['hotspot_size'],                          # determines the image size: (size, size)
-            spread = params_particle['hotspot_spread'],                        # determines how many annular rings we desire
-            max_intensity= params_scene['max_intensity']                  # 255 for 8 bit, 65535 for 8 bit pixel
-        )
+        self.hs_sphere_structure = HotSpot_Structure_SPHERE(params_particle)
         self._generate_particles()
         self._initialize_images()
         self._generate_images()
@@ -96,12 +92,12 @@ class Synthetic_Image_Generator():
         for particle in self.particles:
             posX = round(particle.position[0])
             posY = round(particle.position[1])
-            self.img_composite = cv.circle(self.img_composite, (posX, posY), round(particle.radius), (255, 255, 255), 1)
+            self.img_composite = cv.circle(self.img_composite, (posX, posY), round(particle.radius), (255, 255, 255), 2)
             self.img_composite = cv.drawMarker(self.img_composite, (posX, posY), (255, 255, 255), cv.MARKER_CROSS, 20, 3)
             for centroid in particle.centroids:
                 cX = round(centroid[0])
                 cY = round(centroid[1])
-                self.img_composite = cv.circle(self.img_composite, (cX, cY), self.hotspot_size, (255, 255, 255), -1)
+                self.img_composite = cv.circle(self.img_composite, (cX, cY), 10, (255, 255, 255), -1)
                 #self.img_composite[cY-self.hotspot_size:cY+self.hotspot_size, cX-self.hotspot_size:cX+self.hotspot_size] = self.hs_sphere_structure.img
 
     def _generate_image_channels(self):
@@ -109,11 +105,14 @@ class Synthetic_Image_Generator():
             for particle in self.particles:
                 cX = round(particle.centroids[channel][0])
                 cY = round(particle.centroids[channel][1])
-                #self.img_channels[channel] = cv.circle(self.img_channels[channel], (cX, cY), self.hotspot_size, (255, 255, 255), -1)
                 
-                self.img_channels[channel][cY-self.hotspot_size:cY+self.hotspot_size, cX-self.hotspot_size:cX+self.hotspot_size] = self.hs_sphere_structure.img
-
-            
+                #self.img_channels[channel] = cv.circle(self.img_channels[channel], (cX, cY), self.hotspot_size, (255, 255, 255), -1)
+                row_l, row_h = cY-self.hotspot_size, cY+self.hotspot_size
+                col_l, col_h = cX-self.hotspot_size, cX+self.hotspot_size
+                hotspot_image = self.hs_sphere_structure.generate_hotspot_image()
+                #self.img_channels[channel][row_l:row_h, col_l:col_h] = self.hs_sphere_structure.hotspot_img
+                self.img_channels[channel][row_l:row_h, col_l:col_h] = cv.add(self.img_channels[channel][row_l:row_h, col_l:col_h], hotspot_image, dtype=cv.CV_8U)
+                
             # Blurring should be done before introducing hot-dead pixels
             # self.img_channels[channel] = cv.GaussianBlur(self.img_channels[channel], (11, 11), 0)
             # Introducing hot pixels
