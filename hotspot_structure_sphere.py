@@ -51,8 +51,11 @@ class HotSpot_Structure_SPHERE():
 
     def _generate_gaussian_bessel_hotspot(self):
         max_intensity = self._generate_random_max_intensity()
-        hotspot_img = cv.add(self._generate_gaussian_hotspot(), self._generate_bessel_hotspot(), dtype = cv.CV_8U)
-        #hotspot_img = cv.normalize(hotspot_img, None, 0, max_intensity, cv.NORM_MINMAX)
+        #hotspot_img = cv.add(self._generate_gaussian_hotspot(), self._generate_bessel_hotspot(), dtype = cv.CV_8U)
+        ## hotspot_img = cv.normalize(hotspot_img, None, 0, max_intensity, cv.NORM_MINMAX)
+        rand_num = np.random.uniform()
+        hotspot_img = rand_num*self._generate_bessel_hotspot() + (1 - rand_num)*self._generate_gaussian_hotspot()
+        hotspot_img = cv.normalize(hotspot_img, None, 0, max_intensity, cv.NORM_MINMAX)
         return hotspot_img
         
     def generate_hotspot_image(self):
@@ -66,23 +69,24 @@ class HotSpot_Structure_SPHERE():
             raise Exception('Type argument not valid')
         return self.hotspot_img
 
-    def plot_hotspot_image(self):
-        import matplotlib.pyplot as plt
-        plt.imshow(self.hotspot_img, cmap = plt.get_cmap('gray'))
-        plt.show()
-
 def main():
+    import matplotlib.pyplot as plt
     params = {
-        #spread = 16,                        # determines how many annular rings we desire
-
-        'hotspot_size': 20,                         # determines the image size: (2*size, 2*size)
-        'hotspot_intensity_mean': 150,               # 255 for 8 bit, 65535 for 8 bit pixel
-        'hotspot_intensity_std': 50,
-        'hotspot_type': 'GAUSSIAN',
-    }
+            # Hot-Spot-Parameters
+            'hotspot_size': 20,
+            'hotspot_intensity_mean': 200,               # 255 for 8 bit, 65535 for 8 bit pixel
+            'hotspot_intensity_std': 25,
+            'hotspot_vaccilating_bool': True,
+            'hotspot_vaccilating_probs': 0.05,
+            'hotspot_vaccilating_factor': 0.25,         # controls the hotspot_intensity_mean by this factor while dimming
+            'hotspot_type': 'GAUSSIAN_BESSEL',          #  'GAUSSIAN', 'BESSEL', 'GAUSSIAN_BESSEL'
+            'hotspot_spread': 20                        # necessary on when adding BESSEL
+        }
 
     hs = HotSpot_Structure_SPHERE(params)
-    hs.plot_hotspot_image()
+    hotspot_img = hs.generate_hotspot_image()
+    plt.imshow(hotspot_img, cmap = plt.get_cmap('gray'))
+    plt.show()
 
 if __name__=='__main__':
     import os

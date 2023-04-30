@@ -110,15 +110,20 @@ class Synthetic_Image_Generator():
                 row_l, row_h = cY-self.hotspot_size, cY+self.hotspot_size
                 col_l, col_h = cX-self.hotspot_size, cX+self.hotspot_size
                 hotspot_image = self.hs_sphere_structure.generate_hotspot_image()
+                if (row_l < 0) or (row_h > self.height_scene) or (col_l < 0) or (col_h > self.width_scene):
+                    # don't paint it
+                    continue
                 #self.img_channels[channel][row_l:row_h, col_l:col_h] = self.hs_sphere_structure.hotspot_img
                 self.img_channels[channel][row_l:row_h, col_l:col_h] = cv.add(self.img_channels[channel][row_l:row_h, col_l:col_h], hotspot_image, dtype=cv.CV_8U)
-                
-            # Blurring should be done before introducing hot-dead pixels
-            # self.img_channels[channel] = cv.GaussianBlur(self.img_channels[channel], (11, 11), 0)
+            
+            #gauss_noise = np.zeros((self.height_scene,self.width_scene),dtype=np.uint8)
+            #cv.randn(gauss_noise,50,10)
+            #self.img_channels[channel] = cv.add(self.img_channels[channel], gauss_noise)
+            
             # Introducing hot pixels
-            # self.img_channels[channel][self.salt_noise_loc] = self.max_intensity
+            #self.img_channels[channel][self.salt_noise_loc] = self.max_intensity
             # Introducing dead pixels
-            # self.img_channels[channel][self.pepper_noise_loc] = 0
+            #self.img_channels[channel][self.pepper_noise_loc] = 0
 
     def _generate_images(self):
         self._generate_image_composite()

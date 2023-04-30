@@ -20,7 +20,7 @@ class Controller(Ui_MainWindow, QMainWindow):
         params_scene = {
             # Particles
             'num_particles': 10,
-            'min_proximity': 200,
+            'min_proximity': 100,
 
             # Boundary Parameters
             'width_scene': 2048,
@@ -39,14 +39,14 @@ class Controller(Ui_MainWindow, QMainWindow):
             'num_channels': self.num_channels,
             'angular_variation_std': 0, # np.pi/180 * 2,         # 2 degree noise std
             'radius_hotspot_noise_std_factor': 0.03,
-            'hotspot_size': 20,
+            'hotspot_size': 30,
             'hotspot_intensity_mean': 200,               # 255 for 8 bit, 65535 for 8 bit pixel
             'hotspot_intensity_std': 25,
             'hotspot_vaccilating_bool': True,
             'hotspot_vaccilating_probs': 0.05,
             'hotspot_vaccilating_factor': 0.25,         # controls the hotspot_intensity_mean by this factor while dimming
             'hotspot_type': 'GAUSSIAN_BESSEL',          #  'GAUSSIAN', 'BESSEL', 'GAUSSIAN_BESSEL'
-            'hotspot_spread': 16                        # necessary on when adding BESSEL
+            'hotspot_spread': 10                        # necessary on when adding BESSEL
         }
 
         self.synGenObj = Synthetic_Image_Generator(params_scene, params_particle_sphere)
@@ -88,9 +88,13 @@ class Controller(Ui_MainWindow, QMainWindow):
         imglabel.setPixmap(QPixmap(qImg))
 
     def saveImages(self):
-        cv.imwrite('Results/Composite.jpg', self.synGenObj.get_image_composite())
+        import imageio
+        image_list = []
+        #cv.imwrite('Results/Composite.jpg', self.synGenObj.get_image_composite())
         for channel in range(self.num_channels):
-            cv.imwrite(f'Results/Channel-{channel+1}.jpg', self.synGenObj.get_image_channel(channel))
+            #cv.imwrite(f'Results/Channel-{channel+1}.jpg', self.synGenObj.get_image_channel(channel))
+            image_list.append(self.synGenObj.get_image_channel(channel))
+        imageio.mimsave('Results/Scene.gif', image_list, duration = 250, loop = 0)
 
 def main():
     app = QApplication(sys.argv)
