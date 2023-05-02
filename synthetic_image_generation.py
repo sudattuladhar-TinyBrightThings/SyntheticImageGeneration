@@ -11,6 +11,7 @@ class Synthetic_Image_Generator():
         # Particle Parameters
         self.num_channels = params_particle['num_channels']
         self.radius_mean = params_particle['radius_mean']
+        self.radius_std = params_particle['radius_std']
         self.hotspot_size = params_particle['hotspot_size']
         #self.hotspot_spread = params_particle['hotspot_spread']
 
@@ -20,6 +21,7 @@ class Synthetic_Image_Generator():
         self.height_scene = params_scene['height_scene']
         self.min_proximity = params_scene['min_proximity']
         self.max_intensity = params_scene['max_intensity']
+        self.SNR = params_scene['SNR']
 
         self.params_scene = params_scene
         self.params_particle = params_particle
@@ -31,7 +33,7 @@ class Synthetic_Image_Generator():
         self._generate_images()
 
     def _generate_random_position(self):
-        min_gap = 2*self.radius_mean
+        min_gap = 2*self.radius_mean + 4*self.radius_std
         px = np.random.uniform(low = min_gap, high = self.width_scene - min_gap)
         py = np.random.uniform(low = min_gap, high = self.height_scene - min_gap)
         return (px, py)
@@ -65,7 +67,8 @@ class Synthetic_Image_Generator():
         self._generate_particles_position()
         self.particles = [Particle_SPHERE(self.params_particle, position = pos) for pos in self.center_points]
         
-    def draw_particles(self):
+    # solely for the purpose of debug-visualization, not to be used for any other purpose
+    def _draw_particles(self):
         for idx, particle in enumerate(self.particles):
             plt.scatter(particle.position[0], particle.position[1], marker='x')
             for centroid in particle.centroids:
@@ -85,8 +88,8 @@ class Synthetic_Image_Generator():
 
         self.img_salt_noise_uniform = np.random.uniform(low = 0, high = 1, size = self.img_composite.shape)
         self.img_pepper_noise_uniform = np.random.uniform(low = 0, high = 1, size = self.img_composite.shape)
-        self.salt_noise_loc = np.where(self.img_salt_noise_uniform < 0.01)
-        self.pepper_noise_loc = np.where(self.img_salt_noise_uniform < 0.01)
+        self.salt_noise_loc = np.where(self.img_salt_noise_uniform < self.params_scene['hot_pixel_probs'])
+        self.pepper_noise_loc = np.where(self.img_salt_noise_uniform < self.params_scene['dead_pixel_probs'])
 
     def _generate_image_composite(self):
         for particle in self.particles:
@@ -109,22 +112,56 @@ class Synthetic_Image_Generator():
                 #self.img_channels[channel] = cv.circle(self.img_channels[channel], (cX, cY), self.hotspot_size, (255, 255, 255), -1)
                 row_l, row_h = cY-self.hotspot_size, cY+self.hotspot_size
                 col_l, col_h = cX-self.hotspot_size, cX+self.hotspot_size
-                hotspot_image = self.hs_sphere_structure.generate_hotspot_image()
+
                 if (row_l < 0) or (row_h > self.height_scene) or (col_l < 0) or (col_h > self.width_scene):
                     # don't paint it
                     continue
+                
+                hotspot_image = self.hs_sphere_structure.generate_hotspot_image()
+
+                # row_l = max(min(row_l, self.height_scene - 1), 0)
+                # row_h = max(min(row_h, self.height_scene - 1), 0)
+                # col_l = max(min(col_l, self.width_scene - 1), 0)
+                # col_h = max(min(col_h, self.width_scene - 1), 0)
+
+                # hotspot_image = self.hs_sphere_structure.generate_hotspot_image()
+                # if (row_h - row_l <= 0) or (col_h - col_l) <= 0:
+                #     continue;
+                
+                # hs_row_l, hs_col_l = cY - row_l, cX - col_l
+                # hs_row_h, hs_col_h = hs_row_l + (row_h - row_l), hs_col_l + (col_h - col_l)
+
+                
+                # hotspot_image = hotspot_image[hs_row_l: hs_row_h, hs_col_l: hs_col_h]
+
+                # print(f'''
+                #     '(row_l, col_l)': ({row_l}, {col_l}),
+                #     '\t\t\t\t\t(row_h, col_h)': ({row_h}, {col_h}),
+                # ''')
+
+                # print(f'''
+                #     image roi: {self.img_channels[channel][row_l:row_h, col_l:col_h].shape}
+                #     hotspot: {hotspot_image.shape}
+                # ''')
+
                 #self.img_channels[channel][row_l:row_h, col_l:col_h] = self.hs_sphere_structure.hotspot_img
                 self.img_channels[channel][row_l:row_h, col_l:col_h] = cv.add(self.img_channels[channel][row_l:row_h, col_l:col_h], hotspot_image, dtype=cv.CV_8U)
             
-            #gauss_noise = np.zeros((self.height_scene,self.width_scene),dtype=np.uint8)
-            #cv.randn(gauss_noise,50,10)
-            #self.img_channels[channel] = cv.add(self.img_channels[channel], gauss_noise)
+            # Add noise with fixed SNR
+            self.img_channels[channel] = self._add_noise(self.img_channels[channel])
             
-            # Introducing hot pixels
-            #self.img_channels[channel][self.salt_noise_loc] = self.max_intensity
-            # Introducing dead pixels
-            #self.img_channels[channel][self.pepper_noise_loc] = 0
+            # Introducing hot and pixels
+            self.img_channels[channel][self.salt_noise_loc] = self.max_intensity
+            self.img_channels[channel][self.pepper_noise_loc] = 0
 
+    def _add_noise(self, img):
+        noise_var = np.mean(img**2)/10**(self.SNR/10)
+        #print('noise var: ', noise_var)
+        gauss_noise = np.zeros(img.shape, dtype = np.uint8)
+        cv.randn(gauss_noise, 0, np.sqrt(noise_var))
+        return cv.add(img, gauss_noise*self.max_intensity)
+        #return cv.add(img, gauss_noise)
+    
     def _generate_images(self):
         self._generate_image_composite()
         self._generate_image_channels()

@@ -17,7 +17,7 @@ class HotSpot_Structure_SPHERE():
 
     def _generate_random_max_intensity(self):
         hotspot_intensity_mean = self.params['hotspot_intensity_mean']
-        if self.params['hotspot_vaccilating_bool'] == True:
+        if self.params['hotspot_vaccilating_bool']:
             p = self.params['hotspot_vaccilating_probs']
             factor = np.random.choice([self.params['hotspot_vaccilating_factor'], 1], p = [p, 1-p])
             hotspot_intensity_mean = hotspot_intensity_mean * factor
@@ -67,7 +67,6 @@ class HotSpot_Structure_SPHERE():
             return self._generate_gaussian_bessel_hotspot()
         else:
             raise Exception('Type argument not valid')
-        return self.hotspot_img
 
 def main():
     import matplotlib.pyplot as plt

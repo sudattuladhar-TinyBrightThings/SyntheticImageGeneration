@@ -15,19 +15,23 @@ class Controller(Ui_MainWindow, QMainWindow):
         self.setupUi(self)
         
         self.num_channels = 15
-        #np.random.seed(0)
 
         params_scene = {
             # Particles
             'num_particles': 10,
             'min_proximity': 100,
 
-            # Boundary Parameters
+            # Camera Parameters
             'width_scene': 2048,
             'height_scene':1536,
+            'hot_pixel_probs': 0.01,        # 0.01  ; pixel is always hot with this probability
+            'dead_pixel_probs': 0.01,       # 0.01  ; pixel is always dead with this probability
 
             # Intensity Parameters
-            'max_intensity': 255
+            'max_intensity': 255,
+
+            # Noise Parameters
+            'SNR':10,                      # in dB, more is the SNR less is the noise with relation SNR = E[S^2]/(sigma_N)^2
         }
 
         params_particle_sphere = {
@@ -42,10 +46,10 @@ class Controller(Ui_MainWindow, QMainWindow):
             'hotspot_size': 30,
             'hotspot_intensity_mean': 200,               # 255 for 8 bit, 65535 for 8 bit pixel
             'hotspot_intensity_std': 25,
-            'hotspot_vaccilating_bool': True,
+            'hotspot_vaccilating_bool': False,
             'hotspot_vaccilating_probs': 0.05,
             'hotspot_vaccilating_factor': 0.25,         # controls the hotspot_intensity_mean by this factor while dimming
-            'hotspot_type': 'GAUSSIAN_BESSEL',          #  'GAUSSIAN', 'BESSEL', 'GAUSSIAN_BESSEL'
+            'hotspot_type': 'BESSEL',          #  'GAUSSIAN', 'BESSEL', 'GAUSSIAN_BESSEL'
             'hotspot_spread': 10                        # necessary on when adding BESSEL
         }
 
@@ -66,8 +70,6 @@ class Controller(Ui_MainWindow, QMainWindow):
         self.timer.timeout.connect(self.animate)
         self.timer.start(250)
         self.show()
-
-        self.saveImages()
 
     def animate(self):
         img = self.synGenObj.get_image_channel(self.channel)
@@ -98,7 +100,9 @@ class Controller(Ui_MainWindow, QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
+    np.random.seed(0)
     controller = Controller()
+    #controller.saveImages()
     app.exec()
 
 if __name__ == '__main__':
