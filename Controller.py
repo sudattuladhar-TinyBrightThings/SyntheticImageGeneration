@@ -31,7 +31,7 @@ class Controller(Ui_MainWindow, QMainWindow):
             'max_intensity': 255,
 
             # Noise Parameters
-            'SNR':10,                      # in dB, more is the SNR less is the noise with relation SNR = E[S^2]/(sigma_N)^2
+            'SNR':-30,                      # in dB, more is the SNR less is the noise with relation SNR = E[S^2]/(sigma_N)^2
         }
 
         params_particle_sphere = {
@@ -102,7 +102,7 @@ def main():
     app = QApplication(sys.argv)
     np.random.seed(0)
     controller = Controller()
-    #controller.saveImages()
+    controller.saveImages()
     app.exec()
 
 if __name__ == '__main__':

@@ -158,9 +158,9 @@ class Synthetic_Image_Generator():
         noise_var = np.mean(img**2)/10**(self.SNR/10)
         #print('noise var: ', noise_var)
         gauss_noise = np.zeros(img.shape, dtype = np.uint8)
+        #gauss_noise = gauss_noise * self.max_intensity
         cv.randn(gauss_noise, 0, np.sqrt(noise_var))
-        return cv.add(img, gauss_noise*self.max_intensity)
-        #return cv.add(img, gauss_noise)
+        return cv.add(img, gauss_noise)
     
     def _generate_images(self):
         self._generate_image_composite()
